@@ -50,3 +50,8 @@ var$Pos <- as.numeric(var$Pos)
 test$Gene <- ''
 test2<-rbind(test,var)
 test3 <- test2 %>% dplyr::filter(ROH != "No")
+ggplot(data=test2,aes(x=Pos,y=ROH,colour=Gene)) + geom_point() + facet_wrap(~Chr,ncol=2) + theme_bw()
+
+
+one$Chr <- factor(one$Chr,levels=c("chr1","chr2","chr3","chr4","chr5","chr6","chr7","chr8","chr9","chr10","chr11","chr12","chr13","chr14","chr15","chr16","chr17","chr18","chr19","chr20","chr21","chr22","chrX","chrY"))
+ggplot(data=one,aes(x=Pos,y=HomozygousState,colour=ROH)) + geom_line() + facet_wrap(~Chr,ncol=1)
