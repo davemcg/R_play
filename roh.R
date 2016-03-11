@@ -9,8 +9,6 @@ CCGO60 <- fread('~/Dropbox/CCGO_800060.bcftools.roh',skip=3)
 CCGO61 <- fread('~/Dropbox/CCGO_800061.bcftools.roh',skip=3)
 CCGO62 <- fread('~/Dropbox/CCGO_800062.bcftools.roh',skip=3)
 
-the_df <- CCGO62
-
 blockFinder <- function(df, Subject) {
   the_df <- df
 
@@ -37,11 +35,11 @@ two<-blockFinder(CCGO60,"60")
 three<-blockFinder(CCGO61,"61")
 four<-blockFinder(CCGO62,"62")
 
-# http://stackoverflow.com/questions/8091303/simultaneously-merge-multiple-data-frames-in-a-list
-my.list <- list(one,two,three,four)
-# make unique names
-my.list2 = Map(function(x, i) setNames(x, ifelse(names(x) %in% match.by,names(x), sprintf('%s.%d', names(x), i))), my.list, seq_along(my.list))
-merged.data.frame = Reduce(function(...) merge(..., by=c("Chr","Pos"),all=T,allow.cartesian=TRUE), my.list2)
+test <- rbind(one,two,three,four)
+test <- test[!duplicated(test),]
+test$Chr <- factor(test$Chr,levels=c("chr1","chr2","chr3","chr4","chr5","chr6","chr7","chr8","chr9","chr10","chr11","chr12","chr13","chr14","chr15","chr16","chr17","chr18","chr19","chr20","chr21","chr22","chrX","chrY"))
 
-merged.data.frame$Chr <- sapply(merged.data.frame$Chr,function(x) substr(x,4,6))
+ggplot() + geom_point(data=test,aes(x=Pos,y=ROH)) + facet_wrap(~Chr,ncol=2)
+
+
 ggplot(merged.data.frame) + geom_point(aes(x=Pos,y=ROH.1)) + geom_point(aes(x=Pos,y=ROH.2)) + geom_point(aes(x=Pos,y=ROH.3)) + geom_point(aes(x=Pos,y=ROH.4)) + facet_wrap(~Chr,scales='free_x',ncol=2)
