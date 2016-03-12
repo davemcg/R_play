@@ -20,10 +20,10 @@ blockFinder <- function(df, Subject) {
   colnames(the_df) <- c("Chr","Pos","HomozygousState","Quality")
   runs <- rle2(the_df$HomozygousState,indices = TRUE)
   runs <- data.table(runs)
-   # find roh block with >n (100) consecutive calls of homozygosity
+  # find roh block with >n (100) consecutive calls of homozygosity
   over50 <- (runs %>% dplyr::filter(((stops-starts) > 100) & values==1) %>% arrange(-lengths))
   # calculate genomic space in the roh
-  over50$GenomicDistance<-apply(over50,1,function(x) abs(the_df[x[2]]$Pos - the_df[x[3]]$Pos))
+  over50$GenomicDistance <- apply(over50,1,function(x) abs(the_df[x[2]]$Pos - the_df[x[3]]$Pos))
   # only keep roh with >1,000,000kb
   over50 <- over50 %>% filter(GenomicDistance > 1000000)
 
@@ -34,6 +34,27 @@ blockFinder <- function(df, Subject) {
   }
   return(the_df)
 }
+
+blockFinderAppend <- function(df, Subject) {
+  the_df <- df
+  colnames(the_df) <- c("Chr","Pos","HomozygousState","Quality")
+  the_df$End <- the_df$Pos + 1
+  the_df <- the_df %>% arrange(Chr, Pos, End, HomozygousState, Quality)
+  
+  runs <- rle2(the_df$HomozygousState,indices = TRUE)
+  runs <- data.table(runs)
+  # find roh block with >n (100) consecutive calls of homozygosity
+  over <- runs %>% dplyr::filter(((stops-starts) > 100) & values==1) %>% arrange(-lengths)
+  # calculate genomic space in the roh
+  over$GenomicDistance<-apply(over,1,function(x) abs(the_df[x[2]]$Pos - the_df[x[3]]$Pos))
+  over$Position <- apply(over,1,function(x) the_df[x[2]]$Pos-0)
+  over$End <- apply(over,1,function(x) the_df[x[3]]$Pos-0)
+  over$Chr <- apply(over,1,function(x) the_df[x[2]]$Chr)
+  # only keep roh with >1,000,000kb
+  over <- over %>% filter(GenomicDistance > 1000000)
+  return(over)
+}
+
 
 test59.62 <- rbind(blockFinder(CCGO59,"59"),blockFinder(CCGO60,"60"),blockFinder(CCGO61,"61"),blockFinder(CCGO62,"62"))
 # and/or
