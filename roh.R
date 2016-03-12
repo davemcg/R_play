@@ -38,11 +38,14 @@ blockFinder <- function(df, Subject) {
 blockFinderAppend <- function(df, Subject) {
   the_df <- df
   colnames(the_df) <- c("Chr","Pos","HomozygousState","Quality")
-  the_df$End <- the_df$Pos + 1
+  the_df$End <- the_df$Pos 
   the_df$Subject <- Subject
   the_df$Class <- "Variant"
   the_df <- the_df %>% dplyr::select(Chr, Pos, End, HomozygousState, Quality, Subject, Class)
   
+  #############################
+  # NEED TO BREAK UP BY CHR!!!!!!!!
+  ##############################
   runs <- rle2(the_df$HomozygousState,indices = TRUE)
   runs <- data.table(runs)
   # find roh block with >n (100) consecutive calls of homozygosity
@@ -114,7 +117,20 @@ gem$Pos <- as.numeric(gem$Pos)
 
 
 # plotting with the new blockFinderAppend function
+CCGO59bf <- blockFinderAppend(CCGO59,"59")
+CCGO60bf <- blockFinderAppend(CCGO60,"60")
+CCGO61bf <- blockFinderAppend(CCGO61,"61")
+CCGO62bf <- blockFinderAppend(CCGO62,"62")
+
+
+
 ggplot(data=CCGO59_f, aes(x=Pos,y=HomozygousState)) + geom_segment(data=subset(CCGO59_f,Class=="Block"),aes(x=Pos,xend=End,y=1,yend=1),colour="Red",size=5)  + geom_line() + facet_wrap(~Chr,ncol=1)
 
-test <- rbind(CCGO59_f,CCGO62_f)
+test <- rbind(CCGO59bf,CCGO60bf,CCGO61bf,CCGO62bf)
 ggplot(data=test, aes(x=Pos,y=HomozygousState,colour=Subject)) + geom_segment(data=subset(test,Class=="Block"&Subject==59),aes(x=Pos,xend=End,y=1,yend=1),colour="Red",size=5) +geom_segment(data=subset(test,Class=="Block"&Subject==62),aes(x=Pos,xend=End,y=0,yend=0),colour="Blue",size=5)  + geom_line() + facet_wrap(~Chr,ncol=1) + geom_point()
+ggplot(data=test, aes(x=Pos,y=HomozygousState,colour=Subject)) + 
+  geom_segment(data=subset(test,Class=="Block"&Subject==59),aes(x=Pos,xend=End,y=Subject,yend=Subject),colour="Red",size=5) +
+  geom_segment(data=subset(test,Class=="Block"&Subject==60),aes(x=Pos,xend=End,y=Subject,yend=Subject),colour="Green",size=5) +
+  geom_segment(data=subset(test,Class=="Block"&Subject==61),aes(x=Pos,xend=End,y=Subject,yend=Subject),colour="Orange",size=5) +
+  geom_segment(data=subset(test,Class=="Block"&Subject==62),aes(x=Pos,xend=End,y=Subject,yend=Subject),colour="Blue",size=5) + 
+  facet_wrap(~Chr,ncol=2)
