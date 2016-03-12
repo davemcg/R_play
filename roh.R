@@ -39,7 +39,9 @@ blockFinderAppend <- function(df, Subject) {
   the_df <- df
   colnames(the_df) <- c("Chr","Pos","HomozygousState","Quality")
   the_df$End <- the_df$Pos + 1
-  the_df <- the_df %>% arrange(Chr, Pos, End, HomozygousState, Quality)
+  the_df$Subject <- Subject
+  the_df$Class <- "Variant"
+  the_df <- the_df %>% dplyr::select(Chr, Pos, End, HomozygousState, Quality, Subject, Class)
   
   runs <- rle2(the_df$HomozygousState,indices = TRUE)
   runs <- data.table(runs)
@@ -47,12 +49,22 @@ blockFinderAppend <- function(df, Subject) {
   over <- runs %>% dplyr::filter(((stops-starts) > 100) & values==1) %>% arrange(-lengths)
   # calculate genomic space in the roh
   over$GenomicDistance<-apply(over,1,function(x) abs(the_df[x[2]]$Pos - the_df[x[3]]$Pos))
-  over$Position <- apply(over,1,function(x) the_df[x[2]]$Pos-0)
+  over$Pos <- apply(over,1,function(x) the_df[x[2]]$Pos-0)
   over$End <- apply(over,1,function(x) the_df[x[3]]$Pos-0)
   over$Chr <- apply(over,1,function(x) the_df[x[2]]$Chr)
   # only keep roh with >1,000,000kb
   over <- over %>% filter(GenomicDistance > 1000000)
-  return(over)
+  over$HomozygousState <- "1"
+  over$Quality <- "0"
+  over$Subject <- Subject
+  over$Class <- "Block"
+  over <- over %>% select(Chr, Pos, End, HomozygousState, Quality, Subject, Class)
+  
+  output <- rbind(the_df, over)
+  output$Pos <- as.numeric(output$Pos)
+  output$End <- as.numeric(output$End)
+  output$HomozygousState <- as.numeric(output$HomozygousState)
+  return(output)
 }
 
 
@@ -100,3 +112,6 @@ gem$Chr <- factor(gem$Chr,levels=c("chr1","chr2","chr3","chr4","chr5","chr6","ch
 gem$Pos <- as.numeric(gem$Pos)
 
 
+
+# plotting with the new blockFinderAppend function
+ggplot(data=CCGO59_f, aes(x=Pos,y=HomozygousState)) + geom_segment(data=subset(CCGO59_f,Class=="Block"),aes(x=Pos,xend=End,y=1,yend=1),colour="Red",size=5)  + geom_line() + facet_wrap(~Chr,ncol=1)
