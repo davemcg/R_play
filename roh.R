@@ -148,6 +148,7 @@ test2<-test
 test2$Gene <- ''
 test2 <- rbind(test2,var)
 test2$End<-as.numeric(test2$End)
+test2<-test[!duplicated(test2),]
 ggplot(data=test2, aes(x=Pos,y='Coverage',colour=Subject)) + 
   geom_point(size=0.1) + geom_point(data=subset(test2,Class=="AR_variant"),aes(x=Pos,y=Subject,shape=Gene)) +
   geom_segment(data=subset(test,Class=="Block"&Subject==59),aes(x=Pos,xend=End,y=Subject,yend=Subject),colour="Red",size=2) +
