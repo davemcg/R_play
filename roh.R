@@ -42,28 +42,31 @@ blockFinderAppend <- function(df, Subject) {
   the_df$Subject <- Subject
   the_df$Class <- "Variant"
   the_df <- the_df %>% dplyr::select(Chr, Pos, End, HomozygousState, Quality, Subject, Class)
-  
-  #############################
-  # NEED TO BREAK UP BY CHR!!!!!!!!
-  ##############################
-  runs <- rle2(the_df$HomozygousState,indices = TRUE)
-  runs <- data.table(runs)
-  # find roh block with >n (100) consecutive calls of homozygosity
-  over <- runs %>% dplyr::filter(((stops-starts) > 100) & values==1) %>% arrange(-lengths)
-  # calculate genomic space in the roh
-  over$GenomicDistance<-apply(over,1,function(x) abs(the_df[x[2]]$Pos - the_df[x[3]]$Pos))
-  over$Pos <- apply(over,1,function(x) the_df[x[2]]$Pos-0)
-  over$End <- apply(over,1,function(x) the_df[x[3]]$Pos-0)
-  over$Chr <- apply(over,1,function(x) the_df[x[2]]$Chr)
-  # only keep roh with >1,000,000kb
-  over <- over %>% filter(GenomicDistance > 1000000)
-  over$HomozygousState <- "1"
-  over$Quality <- "0"
-  over$Subject <- Subject
-  over$Class <- "Block"
-  over <- over %>% select(Chr, Pos, End, HomozygousState, Quality, Subject, Class)
-  
-  output <- rbind(the_df, over)
+
+  # do rle by chr. Still not working????
+  chroms <- unique(the_df$Chr)
+  # setup block df for ROH blocks
+  blocks <- data.table(rbind(c(0,0,0,0,0,0,0)))
+  colnames(blocks) <- c('Chr', 'Pos', 'End', 'HomozygousState', 'Quality', 'Subject', 'Class')
+  for (i in chroms){
+    chr_df <- subset(the_df,Chr==i)
+    chr_runs <- data.table(rle2(chr_df$HomozygousState,indices=TRUE))
+    over <- chr_runs %>% dplyr::filter(((stops-starts) > 100) & values==1) %>% arrange(-lengths)
+    # calculate genomic space in the roh
+    over$GenomicDistance<-apply(over,1,function(x) abs(chr_df[x[2]]$Pos - chr_df[x[3]]$Pos))
+    over$Pos <- apply(over,1,function(x) chr_df[x[2]]$Pos-0)
+    over$End <- apply(over,1,function(x) chr_df[x[3]]$Pos-0)
+    over$Chr <- i
+    # only keep roh with >1,000,000kb
+    over <- over %>% filter(GenomicDistance > 1000000)
+    over$HomozygousState <- "1"
+    over$Quality <- "0"
+    over$Subject <- Subject
+    over$Class <- "Block"
+    over <- over %>% select(Chr, Pos, End, HomozygousState, Quality, Subject, Class)
+    blocks <- rbind(blocks,over)
+  }
+  output <- rbind(the_df, blocks)
   output$Pos <- as.numeric(output$Pos)
   output$End <- as.numeric(output$End)
   output$HomozygousState <- as.numeric(output$HomozygousState)
