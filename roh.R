@@ -148,10 +148,13 @@ test2<-test
 test2$Gene <- ''
 test2 <- rbind(test2,var)
 test2$End<-as.numeric(test2$End)
-ggplot(data=test2, aes(x=Pos,y='Coverage',colour=Subject,shape=Gene)) + 
-  geom_point(size=0.1) + 
+ggplot(data=test2, aes(x=Pos,y='Coverage',colour=Subject) + 
+  geom_point(size=0.1) + geom_point(data=subset(test2,Class=="AR_variant"),aes(x=Pos,y=Subject,shape=Gene)) +
   geom_segment(data=subset(test,Class=="Block"&Subject==59),aes(x=Pos,xend=End,y=Subject,yend=Subject),colour="Red",size=2) +
   geom_segment(data=subset(test,Class=="Block"&Subject==60),aes(x=Pos,xend=End,y=Subject,yend=Subject),colour="Green",size=2) +
   geom_segment(data=subset(test,Class=="Block"&Subject==61),aes(x=Pos,xend=End,y=Subject,yend=Subject),colour="Orange",size=2) +
-  geom_segment(data=subset(test,Class=="Block"&Subject==62),aes(x=Pos,xend=End,y=Subject,yend=Subject),colour="Blue",size=2) + 
+  geom_segment(data=subset(test,Class=="Block"&Subject==62),aes(x=Pos,xend=End,y=Subject,yend=Subject),colour="Blue",size=2) +
+  geom_segment(data=subset(test,Class=="Block"&Subject==159),aes(x=Pos,xend=End,y=Subject,yend=Subject),colour="Yellow",size=2) + 
+  geom_segment(data=subset(test,Class=="Block"&Subject==160),aes(x=Pos,xend=End,y=Subject,yend=Subject),colour="Purple",size=2) +
+  geom_segment(data=subset(test,Class=="Block"&Subject==161),aes(x=Pos,xend=End,y=Subject,yend=Subject),colour="Gray",size=2) +
   facet_wrap(~Chr,ncol=2) + theme_bw() + xlab('') + ylab('')
