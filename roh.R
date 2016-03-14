@@ -66,6 +66,7 @@ blockFinderAppend <- function(df, Subject) {
     over <- over %>% select(Chr, Pos, End, HomozygousState, Quality, Subject, Class)
     blocks <- rbind(blocks,over)
   }
+  blocks <- blocks[-1,]
   output <- rbind(the_df, blocks)
   output$Pos <- as.numeric(output$Pos)
   output$End <- as.numeric(output$End)
@@ -92,13 +93,7 @@ ggplot() + geom_point(data=test,aes(x=Pos,y=ROH,colour=Family),size=0.5) + facet
 
 #### play stuff
 
-# hom rec variants for CCGO_800059-62
-var <- cbind(c("chr12","chr7","chr1","chr15"),c(9465464,65548068,153314125,72190416),c(0,0,0,0),c('..','..','..','..'),c(62,62,62,62),rep("CCGO_800059-62.var"),c("RP11-22B23.1","ASL","PGLYRP4","MYO9A"))
-colnames(var) <- c("Chr","Pos","HomozygousState","Quality","ROH","Family","Gene")
-var <- data.table(var)
-var$Chr <- factor(var$Chr,levels=c("chr1","chr2","chr3","chr4","chr5","chr6","chr7","chr8","chr9","chr10","chr11","chr12","chr13","chr14","chr15","chr16","chr17","chr18","chr19","chr20","chr21","chr22","chrX","chrY"))
-var$Pos <- as.numeric(var$Pos)
-var$ROH <- "62.var"
+
 
 test$Gene <- ''
 test2<-rbind(test,var)
@@ -130,10 +125,27 @@ CCGO62bf <- blockFinderAppend(CCGO62,"62")
 ggplot(data=CCGO59_f, aes(x=Pos,y=HomozygousState)) + geom_segment(data=subset(CCGO59_f,Class=="Block"),aes(x=Pos,xend=End,y=1,yend=1),colour="Red",size=5)  + geom_line() + facet_wrap(~Chr,ncol=1)
 
 test <- rbind(CCGO59bf,CCGO60bf,CCGO61bf,CCGO62bf)
+test$Chr <- factor(test$Chr,levels=c("chr1","chr2","chr3","chr4","chr5","chr6","chr7","chr8","chr9","chr10","chr11","chr12","chr13","chr14","chr15","chr16","chr17","chr18","chr19","chr20","chr21","chr22","chrX","chrY"))
+
 ggplot(data=test, aes(x=Pos,y=HomozygousState,colour=Subject)) + geom_segment(data=subset(test,Class=="Block"&Subject==59),aes(x=Pos,xend=End,y=1,yend=1),colour="Red",size=5) +geom_segment(data=subset(test,Class=="Block"&Subject==62),aes(x=Pos,xend=End,y=0,yend=0),colour="Blue",size=5)  + geom_line() + facet_wrap(~Chr,ncol=1) + geom_point()
-ggplot(data=test, aes(x=Pos,y=HomozygousState,colour=Subject)) + 
-  geom_segment(data=subset(test,Class=="Block"&Subject==59),aes(x=Pos,xend=End,y=Subject,yend=Subject),colour="Red",size=5) +
-  geom_segment(data=subset(test,Class=="Block"&Subject==60),aes(x=Pos,xend=End,y=Subject,yend=Subject),colour="Green",size=5) +
-  geom_segment(data=subset(test,Class=="Block"&Subject==61),aes(x=Pos,xend=End,y=Subject,yend=Subject),colour="Orange",size=5) +
-  geom_segment(data=subset(test,Class=="Block"&Subject==62),aes(x=Pos,xend=End,y=Subject,yend=Subject),colour="Blue",size=5) + 
-  facet_wrap(~Chr,ncol=2)
+ggplot(data=test, aes(x=Pos,y='Coverage',colour=Subject)) + 
+  geom_point(size=0.1) + 
+  geom_segment(data=subset(test,Class=="Block"&Subject==59),aes(x=Pos,xend=End,y=Subject,yend=Subject),colour="Red",size=2) +
+  geom_segment(data=subset(test,Class=="Block"&Subject==60),aes(x=Pos,xend=End,y=Subject,yend=Subject),colour="Green",size=2) +
+  geom_segment(data=subset(test,Class=="Block"&Subject==61),aes(x=Pos,xend=End,y=Subject,yend=Subject),colour="Orange",size=2) +
+  geom_segment(data=subset(test,Class=="Block"&Subject==62),aes(x=Pos,xend=End,y=Subject,yend=Subject),colour="Blue",size=2) + 
+  facet_wrap(~Chr,ncol=2) + theme_bw() + xlab('') + ylab('')
+
+# hom rec variants for CCGO_800059-62
+var <- cbind(c("chr12","chr7","chr1","chr15"),c(9465464,65548068,153314125,72190416),c(9465464,65548068,153314125,72190416),c(0,0,0,0),c('..','..','..','..'),c('62.var','62.var','62.var','62.var'),c('AR_variant','AR_variant','AR_variant','AR_variant'),c("RP11-22B23.1","ASL","PGLYRP4","MYO9A"))
+colnames(var) <- c("Chr","Pos","End","HomozygousState","Quality","Subject","Class","Gene")
+var <- data.table(var)
+var$Chr <- factor(var$Chr,levels=c("chr1","chr2","chr3","chr4","chr5","chr6","chr7","chr8","chr9","chr10","chr11","chr12","chr13","chr14","chr15","chr16","chr17","chr18","chr19","chr20","chr21","chr22","chrX","chrY"))
+var$Pos <- as.numeric(var$Pos)
+ggplot(data=test, aes(x=Pos,y='Coverage',colour=Subject,shape=Gene)) + 
+  geom_point(size=0.1) + 
+  geom_segment(data=subset(test,Class=="Block"&Subject==59),aes(x=Pos,xend=End,y=Subject,yend=Subject),colour="Red",size=2) +
+  geom_segment(data=subset(test,Class=="Block"&Subject==60),aes(x=Pos,xend=End,y=Subject,yend=Subject),colour="Green",size=2) +
+  geom_segment(data=subset(test,Class=="Block"&Subject==61),aes(x=Pos,xend=End,y=Subject,yend=Subject),colour="Orange",size=2) +
+  geom_segment(data=subset(test,Class=="Block"&Subject==62),aes(x=Pos,xend=End,y=Subject,yend=Subject),colour="Blue",size=2) + 
+  facet_wrap(~Chr,ncol=2) + theme_bw() + xlab('') + ylab('')
