@@ -120,11 +120,13 @@ CCGO60bf <- blockFinderAppend(CCGO60,"60")
 CCGO61bf <- blockFinderAppend(CCGO61,"61")
 CCGO62bf <- blockFinderAppend(CCGO62,"62")
 
-
+CCGO159bf <- blockFinderAppend(CCGO159,"159")
+CCGO160bf <- blockFinderAppend(CCGO160,"160")
+CCGO161bf <- blockFinderAppend(CCGO161,"161")
 
 ggplot(data=CCGO59_f, aes(x=Pos,y=HomozygousState)) + geom_segment(data=subset(CCGO59_f,Class=="Block"),aes(x=Pos,xend=End,y=1,yend=1),colour="Red",size=5)  + geom_line() + facet_wrap(~Chr,ncol=1)
 
-test <- rbind(CCGO59bf,CCGO60bf,CCGO61bf,CCGO62bf)
+test <- rbind(CCGO59bf,CCGO60bf,CCGO61bf,CCGO62bf,CCGO159bf,CCGO160bf,CCGO161bf)
 test$Chr <- factor(test$Chr,levels=c("chr1","chr2","chr3","chr4","chr5","chr6","chr7","chr8","chr9","chr10","chr11","chr12","chr13","chr14","chr15","chr16","chr17","chr18","chr19","chr20","chr21","chr22","chrX","chrY"))
 
 ggplot(data=test, aes(x=Pos,y=HomozygousState,colour=Subject)) + geom_segment(data=subset(test,Class=="Block"&Subject==59),aes(x=Pos,xend=End,y=1,yend=1),colour="Red",size=5) +geom_segment(data=subset(test,Class=="Block"&Subject==62),aes(x=Pos,xend=End,y=0,yend=0),colour="Blue",size=5)  + geom_line() + facet_wrap(~Chr,ncol=1) + geom_point()
@@ -142,7 +144,11 @@ colnames(var) <- c("Chr","Pos","End","HomozygousState","Quality","Subject","Clas
 var <- data.table(var)
 var$Chr <- factor(var$Chr,levels=c("chr1","chr2","chr3","chr4","chr5","chr6","chr7","chr8","chr9","chr10","chr11","chr12","chr13","chr14","chr15","chr16","chr17","chr18","chr19","chr20","chr21","chr22","chrX","chrY"))
 var$Pos <- as.numeric(var$Pos)
-ggplot(data=test, aes(x=Pos,y='Coverage',colour=Subject,shape=Gene)) + 
+test2<-test
+test2$Gene <- ''
+test2 <- rbind(test2,var)
+test2$End<-as.numeric(test2$End)
+ggplot(data=test2, aes(x=Pos,y='Coverage',colour=Subject,shape=Gene)) + 
   geom_point(size=0.1) + 
   geom_segment(data=subset(test,Class=="Block"&Subject==59),aes(x=Pos,xend=End,y=Subject,yend=Subject),colour="Red",size=2) +
   geom_segment(data=subset(test,Class=="Block"&Subject==60),aes(x=Pos,xend=End,y=Subject,yend=Subject),colour="Green",size=2) +
