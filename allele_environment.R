@@ -21,6 +21,7 @@ orig_chr_vcf <- chr_vcf # will use at the end to glue on the new data
 chr_vcf$AF <- apply(chr_vcf,1,function(x) strsplit(x[8],";")[[1]][12])
 chr_vcf <- chr_vcf[,c(1,2,3,4,5,6,7,9)]
 chr_vcf <- data.table(chr_vcf)  # may speed things up a bit, being a data.table
+positions <- chr_vcf$Positions
 # chr_vcf[Position<(239313+250) & Position>(239313-250),]
 
 # Two series of loops, the first finding all indices (genomic positions)
@@ -29,6 +30,7 @@ chr_vcf <- data.table(chr_vcf)  # may speed things up a bit, being a data.table
 #
 # pre-initialize vector to save a bit of time
 indices_up <- vector(mode='integer',length=length(positions))
+system.time(
 for (i in 1:length(positions)) {
   counter <- 1
   while ((i+counter)<length(positions) & 
@@ -36,9 +38,10 @@ for (i in 1:length(positions)) {
     counter=counter+1
   }
   indices_up[i] <- counter - 1
-} 
-
+})
+print("Finished with up")
 indices_down <- vector(mode='integer',length=length(positions))
+system.time(
 for (i in length(positions):1) {
   counter <- 0
   while (
@@ -47,7 +50,8 @@ for (i in length(positions):1) {
     if (i-counter<1) break #kills while loop when start position is going 0 or neg
   }
   indices_down[i] <- counter - 1
-} 
+}) 
+print("Finished with down")
 
 # glue up and down together
 indices <- cbind(indices_up,indices_down)
@@ -72,4 +76,5 @@ for (i in 1:nrow(chr_vcf)){
 } )
 
 orig_chr_vcf <- cbind(orig_chr_vcf,alleles,AFs,distances)
-output_name <- paste(args[1],)
+output_name <- paste("VariantEnvironment_",args[1],sep='')
+write.table(orig_chr_vcf,file=output_name,quote=FALSE,sep='\t',row.names=FALSE)
