@@ -21,7 +21,7 @@ orig_chr_vcf <- chr_vcf # will use at the end to glue on the new data
 chr_vcf$AF <- apply(chr_vcf,1,function(x) strsplit(x[8],";")[[1]][12])
 chr_vcf <- chr_vcf[,c(1,2,3,4,5,6,7,9)]
 chr_vcf <- data.table(chr_vcf)  # may speed things up a bit, being a data.table
-positions <- chr_vcf$Positions
+positions <- chr_vcf[,Position]
 # chr_vcf[Position<(239313+250) & Position>(239313-250),]
 
 # Two series of loops, the first finding all indices (genomic positions)
