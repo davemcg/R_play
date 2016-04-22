@@ -70,7 +70,19 @@ for (i in length(positions):1) {
   total_down[i] <- counter - 1
 } )
 
-
-# genomicRanges?
-library(VariantAnnotation)
-exac <- readVcf("~/Desktop/exac/ExAC_nonTCGA.r0.3.1.sites.vep.PASSonly.vcf.gz","GRCh37")
+alleles<-vector(mode='integer',length=nrow(chr3))
+alleles<-list(alleles)
+AFs<-vector(mode='integer',length=nrow(chr3))
+AFs<-list(AFs)
+distances<-vector(mode='integer',length=nrow(chr3))
+distances<-list(distances)
+system.time(
+for (i in 1:nrow(chr3)){
+    start = i-both[i,2]
+    stop = i+both[i,1]
+    alleles[i] <- list(unlist(strsplit(chr3[start:stop,Alt],",")))
+    AFs[i] <- list(as.numeric(unlist(strsplit(chr3[start:stop,AF],","))))
+    distances[i] <- list(chr3[start:stop,Position] - chr3[i,Position])
+} )
+  
+  
