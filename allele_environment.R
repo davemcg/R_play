@@ -4,8 +4,11 @@
 # and spit out the ExAC vcf with alleles, AFs, and distances for
 # each variant (within a 500bp window)
 
-# gzcat ExAC_nonTCGA.r0.3.1.sites.vep.PASSonly.vcf.gz | awk '!/^#/{print>>$1;close($1)}'
+# First keep only PASS variants (gzcat for mac, zcat for linux, PC? uh, I don't know)
+# gzcat ~/Desktop/exac/ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz | grep 'PASS\|^#' > ~/Desktop/exac/ExAC_nonTCGA.r0.3.1.sites.vep.PASSonly.vcf
 # splits ExAC vcf by chr
+# gzcat ExAC_nonTCGA.r0.3.1.sites.vep.PASSonly.vcf.gz | awk '!/^#/{print>>$1;close($1)}'
+
 library(data.table)
 args = commandArgs(trailingOnly=TRUE)
 
@@ -17,8 +20,10 @@ chr_vcf <- fread(args[1])
 chr_vcf<-data.frame(chr_vcf)
 colnames(chr_vcf) <- c("Chr","Position","ID","Ref","Alt","Qual","Filter","Info")
 chr_vcf <- chr_vcf[!duplicated(chr_vcf),]
-orig_chr_vcf <- chr_vcf # will use at the end to glue on the new data
+# pull AF into a new column
 chr_vcf$AF <- apply(chr_vcf,1,function(x) strsplit(x[8],";")[[1]][12])
+# remove AF=
+chr_vcf$AF <- sapply(chr_vcf$AF, function(x) substr(x,4,4000))
 chr_vcf <- chr_vcf[,c(1,2,3,4,5,6,7,9)]
 chr_vcf <- data.table(chr_vcf)  # may speed things up a bit, being a data.table
 positions <- chr_vcf[,Position]
@@ -60,21 +65,34 @@ indices <- cbind(indices_up,indices_down)
 # Using the indices above, Get all of the alleles
 # Allele Frequencies (AF) and distances from the 
 # variant
-alleles<-vector(mode='integer',length=nrow(chr_vcf))
-alleles<-list(alleles)
+Alt_Alleles<-vector(mode='integer',length=nrow(chr_vcf))
+Alt_Alleles<-list(Alt_Alleles)
 AFs<-vector(mode='integer',length=nrow(chr_vcf))
 AFs<-list(AFs)
-distances<-vector(mode='integer',length=nrow(chr_vcf))
-distances<-list(distances)
+Distances<-vector(mode='integer',length=nrow(chr_vcf))
+Distances<-list(Distances)
 system.time(
 for (i in 1:nrow(chr_vcf)){
     start = i-indices[i,2]
     stop = i+indices[i,1]
-    alleles[i] <- list(unlist(strsplit(chr_vcf[start:stop,Alt],",")))
+    Alt_Alleles[i] <- list(unlist(strsplit(chr_vcf[start:stop,Alt],",")))
     AFs[i] <- list(as.numeric(unlist(strsplit(chr_vcf[start:stop,AF],","))))
-    distances[i] <- list(chr_vcf[start:stop,Position] - chr_vcf[i,Position])
+    Distances[i] <- list(chr_vcf[start:stop,Position] - chr_vcf[i,Position])
 } )
 
-orig_chr_vcf <- cbind(orig_chr_vcf,alleles,AFs,distances)
+# first save to R data type
+temp <- cbind(Alt_Alleles,AFs,Distances)
+chr_vcf_R <- cbind(chr_vcf,temp)
 output_name <- paste("VariantEnvironment_",args[1],sep='')
-write.table(orig_chr_vcf,file=output_name,quote=FALSE,sep='\t',row.names=FALSE)
+output_name_R <- paste(output_name,".Rdata",sep='')
+save(chr_vcf_R,file=output_name_R)
+
+# now collapse lists to save to plaintext file
+#Alt_Alleles<-sapply(Alt_Alleles,function(x) paste(x,collapse=','))
+#AFs <- sapply(AFs,function(x) paste(x,collapse=',')) 
+#Distances<-sapply(Distances,function(x) paste(x,collapse=','))
+
+#temp <- cbind(Alt_Alleles,AFs,Distances)
+#chr_vcf_P <- cbind(chr_vcf,temp)
+#output_name_P <- paste(output_name,".txt",sep='')
+#write.table(chr_vcf_P,file=output_name_P,quote=FALSE,sep='\t',row.names=FALSE)
