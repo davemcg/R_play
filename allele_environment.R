@@ -21,7 +21,10 @@ chr_vcf<-data.frame(chr_vcf)
 colnames(chr_vcf) <- c("Chr","Position","ID","Ref","Alt","Qual","Filter","Info")
 chr_vcf <- chr_vcf[!duplicated(chr_vcf),]
 # pull AF into a new column
-chr_vcf$AF <- apply(chr_vcf,1,function(x) strsplit(x[8],";")[[1]][12])
+chr_vcf$AF <- apply(chr_vcf,1,function(x) {
+  AF_pos <- grep('AF=',strsplit(x[8],';')[[1]])
+  strsplit(x[8],";")[[1]][AF_pos]
+})
 # remove AF=
 chr_vcf$AF <- sapply(chr_vcf$AF, function(x) substr(x,4,4000))
 chr_vcf <- chr_vcf[,c(1,2,3,4,5,6,7,9)]
