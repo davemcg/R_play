@@ -87,7 +87,7 @@ output_name <- paste("VariantEnvironment_",args[1],sep='')
 output_name_R <- paste(output_name,".Rdata",sep='')
 save(chr_vcf_R,file=output_name_R)
 
-# now collapse lists to save to plaintext file
+# now collapse lists to save to plaintext file. DONT BOTHER. HAVE TO RECOMBINE ANY WAY. EASIER WITH RDATA
 #Alt_Alleles<-sapply(Alt_Alleles,function(x) paste(x,collapse=','))
 #AFs <- sapply(AFs,function(x) paste(x,collapse=',')) 
 #Distances<-sapply(Distances,function(x) paste(x,collapse=','))
