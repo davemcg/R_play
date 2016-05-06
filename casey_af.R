@@ -5,6 +5,7 @@ vcf <- fread('~/Dropbox/second2.txt',skip=37)
 library(dplyr)
 info <- vcf %>% select(INFO)
 
+
 caseyTOPPG<-as.integer(sapply(info$INFO,function(x) (strsplit(strsplit(x,'\\|')[[1]][1],'=')[[1]][2])))
 caseySPPG<-as.integer(sapply(info$INFO,function(x) strsplit(strsplit(strsplit(x,'\\|')[[1]][2],";")[[1]][1],'=')[[1]][2]))
 gmaf <- as.numeric(sapply(info$INFO,function(x) (strsplit(strsplit(x,'\\|')[[1]][29],':')[[1]][2])))
@@ -16,6 +17,9 @@ exac[is.na(exac)] <- 1/1000000
 
 caseyMAF <- caseyTOPPG / caseySPPG
 
-AFs<-data.table(cbind(caseyTOPPG,caseySPPG,caseyMAF,gmaf,exac))
-
+AFs<-data.table(cbind(vcf$`#CHROM`,vcf$POS,caseyTOPPG,caseySPPG,caseyMAF,gmaf,exac))
+AFs$caseyMAF<-as.numeric(AFs$caseyMAF)
+AFs$gmaf<-as.numeric(AFs$gmaf)
+AFs$exac<-as.numeric(AFs$exac)
 AFs2<-AFs[!is.na(caseyMAF)]
+# need to remove dups
